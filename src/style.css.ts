@@ -1,4 +1,4 @@
-import { createVar, style } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 
 const questionCard = style({
   width: '100%',
@@ -13,8 +13,6 @@ const questionCard = style({
   textAlign: 'center',
   alignItems: 'center',
 });
-
-const answerButtonFillWidth = createVar();
 
 const answerButtons = style({
   width: '100%',
@@ -49,41 +47,22 @@ const answerButton = style({
   },
 });
 
-const answerButtonYes = style({
-  vars: {
-    [answerButtonFillWidth]: '73%',
-  },
-});
-
-const answerButtonNo = style({
-  vars: {
-    [answerButtonFillWidth]: '27%',
-  },
-});
-
 const answerButtonStats = style({
   backgroundColor: '#EFF0F5',
-  selectors: {
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      bottom: 0,
-      width: answerButtonFillWidth,
-      backgroundColor: '#C9CCDC',
-    },
-  },
+});
+
+const answerButtonFill = style({
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  bottom: 0,
+  backgroundColor: '#C9CCDC',
 });
 
 const answerButtonSelected = style({
   borderColor: '#193CFF',
   boxShadow: '0px 0px 10px 0px #D5DAF6',
   opacity: 1,
-});
-
-const answerButtonUnselected = style({
-  opacity: 0.7,
 });
 
 const answerButtonContent = style({
@@ -106,7 +85,6 @@ const answerButtonLabel = style({
 const answerButtonLabelStats = style({
   flex: 1,
   textAlign: 'center',
-  // set absolute position to center
   position: 'absolute',
   left: '50%',
   transform: 'translateX(-50%)',
@@ -166,11 +144,9 @@ const questionImg = style({
 export const appSt = {
   answerButtons,
   answerButton,
-  answerButtonYes,
-  answerButtonNo,
   answerButtonStats,
+  answerButtonFill,
   answerButtonSelected,
-  answerButtonUnselected,
   answerButtonContent,
   answerButtonContentStats,
   answerButtonLabel,

@@ -14,7 +14,9 @@ type PredictionOption = 'yes' | 'no';
 export const App = () => {
   const [selectedOption, setSelectedOption] = useState<PredictionOption | null>(null);
   const [pressedOption, setPressedOption] = useState<PredictionOption | null>(null);
+  const [yesPercent, setYesPercent] = useState(73);
   const { stocks } = useStocksData();
+  const noPercent = 100 - yesPercent;
 
   useEffect(() => {
     if (!LS.getItem(LSKeys.UserId, null)) {
@@ -30,39 +32,43 @@ export const App = () => {
 
   useEffect(() => {
     if (stocks?.question) {
-      window.gtag('event', '7287_question_impression', { var: 'var3', question: stocks.id });
+      window.gtag('event', '7287_question_impression', { var: 'var6', question: stocks.id });
     }
   }, [stocks]);
 
-  const showAnswerStats = pressedOption !== null;
-
   const getAnswerButtonClassName = (option: PredictionOption) => {
-    const classNames = [appSt.answerButton, option === 'yes' ? appSt.answerButtonYes : appSt.answerButtonNo];
-
-    if (!showAnswerStats) {
-      return classNames.join(' ');
-    }
+    const classNames = [appSt.answerButton];
 
     classNames.push(appSt.answerButtonStats);
 
     if (option === pressedOption) {
       classNames.push(appSt.answerButtonSelected);
-    } else {
-      classNames.push(appSt.answerButtonUnselected);
     }
 
     return classNames.join(' ');
   };
 
-  const getPercentByOption = (option: PredictionOption) => (option === 'yes' ? '73%' : '27%');
+  const getPercentByOption = (option: PredictionOption) => (option === 'yes' ? yesPercent : noPercent);
   const getPercentImageByOption = (option: PredictionOption) => (option === 'yes' ? percent73Img : percent27Img);
+  const getFillWidthStyle = (option: PredictionOption) => ({ width: `${getPercentByOption(option)}%` });
 
   const handleAnswerClick = (option: PredictionOption) => {
+    setYesPercent(prevYesPercent => {
+      if (option === 'yes') {
+        return Math.min(100, prevYesPercent + 1);
+      }
+
+      return Math.max(0, prevYesPercent - 1);
+    });
+
     if (pressedOption) {
+      window.gtag('event', '7287_answer_change', { var: 'var6', answer: option, question: stocks?.id ?? '' });
+      setPressedOption(option);
+
       return;
     }
 
-    window.gtag('event', '7287_answer_click', { var: 'var3', answer: option, question: stocks?.id ?? '' });
+    window.gtag('event', '7287_answer_click', { var: 'var6', answer: option, question: stocks?.id ?? '' });
     setPressedOption(option);
   };
 
@@ -88,7 +94,7 @@ export const App = () => {
             <PureCell
               onClick={() => {
                 window.gtag('event', '7287_choose_security', {
-                  var: 'var3',
+                  var: 'var6',
                   security_ticker: stock.ticker,
                   answer: 'no',
                   question: stocks?.id ?? '',
@@ -145,7 +151,7 @@ export const App = () => {
             <PureCell
               onClick={() => {
                 window.gtag('event', '7287_choose_security', {
-                  var: 'var3',
+                  var: 'var6',
                   security_ticker: stock.ticker,
                   answer: 'yes',
                   question: stocks?.id ?? '',
@@ -200,33 +206,21 @@ export const App = () => {
           </Typography.Text>
 
           <div className={appSt.answerButtons}>
-            <button
-              type="button"
-              className={getAnswerButtonClassName('yes')}
-              onClick={() => handleAnswerClick('yes')}
-              disabled={showAnswerStats}
-            >
-              <span className={`${appSt.answerButtonContent} ${showAnswerStats ? appSt.answerButtonContentStats : ''}`}>
-                {showAnswerStats && <span className={appSt.answerButtonPercent}>{getPercentByOption('yes')}</span>}
-                <span className={`${appSt.answerButtonLabel} ${showAnswerStats ? appSt.answerButtonLabelStats : ''}`}>
-                  Да
-                </span>
-                {showAnswerStats && <img src={getPercentImageByOption('yes')} alt="" className={appSt.answerButtonImage} />}
+            <button type="button" className={getAnswerButtonClassName('yes')} onClick={() => handleAnswerClick('yes')}>
+              <span className={appSt.answerButtonFill} style={getFillWidthStyle('yes')} />
+              <span className={`${appSt.answerButtonContent} ${appSt.answerButtonContentStats}`}>
+                <span className={appSt.answerButtonPercent}>{`${getPercentByOption('yes')}%`}</span>
+                <span className={`${appSt.answerButtonLabel} ${appSt.answerButtonLabelStats}`}>Да</span>
+                <img src={getPercentImageByOption('yes')} alt="" className={appSt.answerButtonImage} />
               </span>
             </button>
 
-            <button
-              type="button"
-              className={getAnswerButtonClassName('no')}
-              onClick={() => handleAnswerClick('no')}
-              disabled={showAnswerStats}
-            >
-              <span className={`${appSt.answerButtonContent} ${showAnswerStats ? appSt.answerButtonContentStats : ''}`}>
-                {showAnswerStats && <span className={appSt.answerButtonPercent}>{getPercentByOption('no')}</span>}
-                <span className={`${appSt.answerButtonLabel} ${showAnswerStats ? appSt.answerButtonLabelStats : ''}`}>
-                  Нет
-                </span>
-                {showAnswerStats && <img src={getPercentImageByOption('no')} alt="" className={appSt.answerButtonImage} />}
+            <button type="button" className={getAnswerButtonClassName('no')} onClick={() => handleAnswerClick('no')}>
+              <span className={appSt.answerButtonFill} style={getFillWidthStyle('no')} />
+              <span className={`${appSt.answerButtonContent} ${appSt.answerButtonContentStats}`}>
+                <span className={appSt.answerButtonPercent}>{`${getPercentByOption('no')}%`}</span>
+                <span className={`${appSt.answerButtonLabel} ${appSt.answerButtonLabelStats}`}>Нет</span>
+                <img src={getPercentImageByOption('no')} alt="" className={appSt.answerButtonImage} />
               </span>
             </button>
           </div>
@@ -240,14 +234,14 @@ export const App = () => {
             view="primary"
             onClick={() => {
               window.gtag('event', '7287_selection_open', {
-                var: 'var3',
+                var: 'var6',
                 question: stocks?.id ?? '',
                 answer: pressedOption ?? '',
               });
               setSelectedOption(pressedOption);
             }}
           >
-            Посмотреть подброку
+            Посмотреть подборку
           </Button>
         </div>
       )}
