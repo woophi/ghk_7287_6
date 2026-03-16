@@ -5,7 +5,7 @@ export type StockItem = {
   price: number;
   img: string;
   currency?: string;
-  nominal: number;
+  nominal?: number;
 };
 
 export type GistResponse = {
