@@ -4,6 +4,8 @@ export type StockItem = {
   link: string;
   price: number;
   img: string;
+  currency?: string;
+  nominal: number;
 };
 
 export type GistResponse = {
